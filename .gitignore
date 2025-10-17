@@ -1,44 +1,84 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# Dependencies
 node_modules/
+package-lock.json
 
 # Expo
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
+# Native builds
+/ios
+/android
+ios/Pods/
+android/app/build/
+android/.gradle/
+android/.idea/
+android/captures/
 *.mobileprovision
 
 # Metro
 .metro-health-check*
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# Logs & debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # macOS
 .DS_Store
 *.pem
 
-# local env files
+# Local env files (prevent leaking API keys)
 .env
 .env*.local
+.envrc
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.env.local.js
+.env.development.js
+.env.test.js
+.env.production.js
+.env.staging.js
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 
-app-example
+# Temporary files
+*.tmp
 
-# generated native folders
-/ios
-/android
+# JetBrains IDEs
+.idea/
+
+# VSCode
+.vscode/
+
+# Google services config
+/GoogleService-Info.plist
+/android/app/google-services.json
+
+# Firebase Crashlytics
+/android/app/crashlytics.properties
+
+# Fastlane artifacts
+/fastlane/report.xml
+/fastlane/Preview.html
+/fastlane/metadata
+/fastlane/screenshots
+/fastlane/test_output
+
+# Sentry
+.sentryclirc
+.sentry/
