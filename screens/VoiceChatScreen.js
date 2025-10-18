@@ -13,6 +13,7 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system/legacy"; // ✅ use legacy API to avoid deprecation crash
 import { Ionicons } from "@expo/vector-icons";
 import { Audio as AVAudio } from "expo-av";
+import { Buffer } from "buffer"; // ✅ needed for base64 conversion
 
 const BACKEND_URL = "https://commute-ai-backend.onrender.com";
 
@@ -92,37 +93,39 @@ export default function VoiceChatScreen() {
       const response = await fetch(`${BACKEND_URL}/talk`, {
         method: "POST",
         body: formData,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "multipart/form-data",
-        },
       });
 
       console.log("📥 Response status:", response.status);
-      const text = await response.text();
-      console.log("📦 Raw backend response:", text);
 
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch {
-        result = { error: "Invalid JSON from backend", raw: text };
-      }
+      // ✅ Detect content type
+      const contentType = response.headers.get("Content-Type") || "";
+      console.log("📦 Content-Type:", contentType);
 
-      if (result.error) {
-        console.error("❌ Backend error:", result.error);
-      }
+      if (contentType.includes("audio/")) {
+        console.log("🔊 Received audio response directly — playing...");
 
-      setTranscript(result.transcript || "");
-      setReply(result.reply || "");
+        // ✅ Convert audio ArrayBuffer -> Base64 -> playable URI
+        const arrayBuffer = await response.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString("base64");
+        const audioUri = `data:audio/mpeg;base64,${base64}`;
 
-      // 🎧 Play TTS audio if available
-      if (result.audio_file) {
-        console.log("🔊 Playing TTS audio from:", `${BACKEND_URL}/reply.mp3`);
-        const { sound } = await AVAudio.Sound.createAsync({
-          uri: `${BACKEND_URL}/reply.mp3`,
-        });
+        const { sound } = await AVAudio.Sound.createAsync({ uri: audioUri });
         await sound.playAsync();
+        setReply("✅ Voice reply played");
+      } else {
+        // 🧪 Handle non-audio responses (errors, debug JSON, etc.)
+        const text = await response.text();
+        console.log("📦 Raw backend response:", text);
+        try {
+          const result = JSON.parse(text);
+          if (result.error) {
+            console.error("❌ Backend error:", result.error);
+          }
+          setTranscript(result.transcript || "");
+          setReply(result.reply || "");
+        } catch {
+          console.warn("⚠️ Could not parse backend response:", text);
+        }
       }
     } catch (err) {
       console.error("❌ Error sending audio:", err);
